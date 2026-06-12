@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+  <!-- SEO -->
+  <title>GayGPT Scanner – AI Gaydar Simulator</title>
+  <meta name="description" content="Try GayGPT Scanner, a parody AI scanner that analyzes your face, voice, and performance energy to generate a funny shareable score." />
+  <link rel="canonical" href="https://gay-gpt-drab.vercel.app/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="GayGPT Scanner – AI Gaydar Simulator" />
+  <meta property="og:description" content="A parody AI scanner that analyzes your face, voice, and performance energy to generate a funny shareable score. Entertainment only." />
+  <meta property="og:url" content="https://gay-gpt-drab.vercel.app/" />
+  <meta property="og:image" content="https://gay-gpt-drab.vercel.app/og-image.png" />
+  <meta property="og:site_name" content="GayGPT Scanner" />
+
+  <!-- Twitter/X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="GayGPT Scanner – AI Gaydar Simulator" />
+  <meta name="twitter:description" content="A parody AI scanner that analyzes your face, voice, and performance energy. Entertainment only 🏳️‍🌈" />
+  <meta name="twitter:image" content="https://gay-gpt-drab.vercel.app/og-image.png" />
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "GayGPT Scanner",
+    "description": "A parody AI gaydar simulator for entertainment purposes only.",
+    "url": "https://gay-gpt-drab.vercel.app/",
+    "applicationCategory": "EntertainmentApplication",
+    "operatingSystem": "Any"
+  }
+  </script>
+
+  <!-- Favicon (inline SVG emoji) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏳️‍🌈</text></svg>" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="noise"></div>
+  <div class="blob blob-a"></div>
+  <div class="blob blob-b"></div>
+  <div class="blob blob-c"></div>
+  <div id="confetti-container"></div>
+
+  <!-- ══════════════ SCREEN: LANDING ══════════════ -->
+  <section class="screen active" id="screen-landing">
+    <div class="landing-inner">
+      <div class="logo-wrap">
+        <span class="logo-text">GayGPT</span>
+        <span class="logo-badge">™ v3</span>
+      </div>
+      <p class="landing-tagline">Advanced Neural Gaydar™<br>Running Entirely In Your Browser</p>
+      <p class="landing-sub">Three-stage biometric analysis. Zero servers. Zero excuses.</p>
+      <div class="flow-steps">
+        <div class="flow-step"><span class="fs-icon">👁️</span><span>Face Scan</span></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span class="fs-icon">🎙️</span><span>Voice Scan</span></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span class="fs-icon">🎭</span><span>Performance</span></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span class="fs-icon">📊</span><span>Results</span></div>
+      </div>
+      <button class="btn btn-primary" id="btn-start">Begin Scan 🔬</button>
+      <p class="disclaimer">Entertainment only. Results are generated for humour. This product does not determine sexual orientation.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════ SCREEN: FACE SCANNER ══════════════ -->
+  <section class="screen" id="screen-face">
+    <div class="screen-header">
+      <div class="logo-sm">GayGPT™</div>
+      <div class="step-pip-row">
+        <div class="step-pip active" data-label="Face"></div>
+        <div class="step-pip" data-label="Voice"></div>
+        <div class="step-pip" data-label="Perf."></div>
+      </div>
+    </div>
+    <h2 class="screen-title">Face Energy Analysis</h2>
+
+    <div class="cam-card" id="face-cam-card">
+      <video id="face-video" autoplay playsinline muted></video>
+      <canvas id="face-canvas"></canvas>
+      <div class="scan-rail"></div>
+      <div class="corner c-tl"></div><div class="corner c-tr"></div>
+      <div class="corner c-bl"></div><div class="corner c-br"></div>
+      <div class="live-badge">● LIVE</div>
+    </div>
+
+    <div class="big-score-row">
+      <span class="big-score-label">Face Energy:</span>
+      <span class="big-score-num" id="face-score-live">0%</span>
+    </div>
+
+    <div class="scan-progress-wrap">
+      <div class="scan-progress-bar" id="face-progress-bar"></div>
+    </div>
+
+    <p class="live-feedback" id="face-live-feedback">Initialising scanner…</p>
+
+    <div class="lockin-wrap" id="face-lockin-wrap" style="display:none">
+      <div class="lockin-detected">Face Detected ✓ &nbsp; Scanning…</div>
+      <div class="lockin-countdown-row">
+        <span class="lockin-label">Auto-lock in:</span>
+        <span class="lockin-num" id="face-lockin-num">5</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-lock-face" disabled>Lock In Face →</button>
+    </div>
+    <p class="hint-text" id="face-hint">Waiting for camera…</p>
+  </section>
+
+  <!-- ══════════════ SCREEN: VOICE SCANNER ══════════════ -->
+  <section class="screen" id="screen-voice">
+    <div class="screen-header">
+      <div class="logo-sm">GayGPT™</div>
+      <div class="step-pip-row">
+        <div class="step-pip done" data-label="Face"></div>
+        <div class="step-pip active" data-label="Voice"></div>
+        <div class="step-pip" data-label="Perf."></div>
+      </div>
+    </div>
+    <h2 class="screen-title">Voice Energy Analysis</h2>
+
+    <div class="phrase-card">
+      <p class="phrase-label">Say this phrase out loud:</p>
+      <p class="phrase-text">"Oh my god, that's actually insane. The drama of it all."</p>
+      <p class="phrase-tip">You have 5 seconds. Let your personality through.</p>
+    </div>
+
+    <div class="wave-card" id="wave-card">
+      <canvas id="wave-canvas" width="460" height="80"></canvas>
+      <div class="wave-overlay" id="wave-overlay">
+        <span>Tap Record to begin</span>
+      </div>
+    </div>
+
+    <div class="big-score-row">
+      <span class="big-score-label">Voice Energy:</span>
+      <span class="big-score-num" id="voice-score-live">0%</span>
+    </div>
+
+    <div class="scan-progress-wrap">
+      <div class="scan-progress-bar" id="voice-progress-bar"></div>
+    </div>
+
+    <p class="live-feedback" id="voice-live-feedback">Ready when you are…</p>
+
+    <div class="countdown-wrap" id="voice-countdown" style="display:none">
+      <div class="countdown-ring">
+        <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="ring-track"/><circle cx="40" cy="40" r="34" class="ring-fill" id="ring-fill"/></svg>
+        <span class="countdown-num" id="countdown-num">5</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-record">Record 5s 🎙️</button>
+    </div>
+    <p class="hint-text" id="voice-hint">Grant mic access when prompted</p>
+  </section>
+
+  <!-- ══════════════ SCREEN: PERFORMANCE CHALLENGE ══════════════ -->
+  <section class="screen" id="screen-perf">
+    <div class="screen-header">
+      <div class="logo-sm">GayGPT™</div>
+      <div class="step-pip-row">
+        <div class="step-pip done" data-label="Face"></div>
+        <div class="step-pip done" data-label="Voice"></div>
+        <div class="step-pip active" data-label="Perf."></div>
+      </div>
+    </div>
+    <h2 class="screen-title">Banana Challenge 🍌</h2>
+
+    <div class="challenge-card" id="perf-instructions">
+      <p class="challenge-emoji">🍌</p>
+      <p class="challenge-prompt">Imagine a giant banana floating in front of you.<br><strong>Demonstrate how dramatically you would react.</strong></p>
+      <p class="challenge-tip">5 seconds. Full body. Maximum drama.</p>
+    </div>
+
+    <div class="cam-card" id="perf-cam-card">
+      <video id="perf-video" autoplay playsinline muted></video>
+      <canvas id="perf-canvas"></canvas>
+      <!-- Animated cartoon banana overlay -->
+      <div class="banana-overlay" id="banana-overlay" style="display:none">
+        <svg class="banana-svg" id="banana-svg" viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="bananaGrad" cx="40%" cy="30%" r="60%">
+              <stop offset="0%" stop-color="#fff176"/>
+              <stop offset="60%" stop-color="#FFE135"/>
+              <stop offset="100%" stop-color="#E6B800"/>
+            </radialGradient>
+            <radialGradient id="bananaTipGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#a07800"/>
+              <stop offset="100%" stop-color="#5a3e00"/>
+            </radialGradient>
+          </defs>
+          <path d="M55,15 C85,15 105,45 100,90 C95,130 75,165 55,185 C40,198 25,195 20,185 C15,175 22,160 35,150 C50,138 62,115 65,85 C68,55 55,28 40,22 C47,17 51,15 55,15 Z"
+                fill="url(#bananaGrad)" stroke="#D4A000" stroke-width="1.5"/>
+          <path d="M50,25 C65,28 78,50 76,75" stroke="rgba(255,255,255,0.55)" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M53,14 C53,14 58,5 62,3 C60,8 58,12 55,15" fill="url(#bananaTipGrad)"/>
+          <path d="M55,185 C55,185 50,196 48,200 C52,195 55,190 56,186" fill="url(#bananaTipGrad)"/>
+          <circle cx="72" cy="70" r="3.5" fill="#7a5000"/>
+          <circle cx="72" cy="95" r="3.5" fill="#7a5000"/>
+          <path d="M62,115 Q72,128 82,115" stroke="#7a5000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <ellipse cx="60" cy="110" rx="5" ry="3" fill="rgba(255,100,100,0.3)"/>
+          <ellipse cx="83" cy="110" rx="5" ry="3" fill="rgba(255,100,100,0.3)"/>
+        </svg>
+      </div>
+      <div class="scan-rail"></div>
+      <div class="corner c-tl"></div><div class="corner c-tr"></div>
+      <div class="corner c-bl"></div><div class="corner c-br"></div>
+      <div class="live-badge">● LIVE</div>
+      <div class="perf-timer-overlay" id="perf-timer-overlay" style="display:none">
+        <span id="perf-timer-num">5</span>
+      </div>
+    </div>
+
+    <div class="big-score-row">
+      <span class="big-score-label">Performance Energy:</span>
+      <span class="big-score-num" id="perf-score-live">0%</span>
+    </div>
+
+    <div class="scan-progress-wrap">
+      <div class="scan-progress-bar" id="perf-progress-bar"></div>
+    </div>
+
+    <p class="live-feedback" id="perf-live-feedback">Get ready…</p>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-perf-start">Start Challenge 🎭</button>
+    </div>
+    <p class="hint-text" id="perf-hint">Step back so your full body is visible</p>
+  </section>
+
+  <!-- ══════════════ SCREEN: LOADING ══════════════ -->
+  <section class="screen" id="screen-loading">
+    <div class="loading-inner">
+      <div class="loading-orb">🏳️‍🌈</div>
+      <h2 class="loading-title">Running Analysis…</h2>
+      <p class="loading-msg" id="loading-msg">Initialising gaydar protocols…</p>
+      <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
+      <p class="loading-caption">Processing 847 biometric indicators</p>
+    </div>
+  </section>
+
+  <!-- ══════════════ SCREEN: RESULTS ══════════════ -->
+  <section class="screen" id="screen-results">
+    <div class="screen-header">
+      <div class="logo-sm">GayGPT™</div>
+    </div>
+
+    <div class="results-score-hero">
+      <div class="results-ring-wrap">
+        <svg viewBox="0 0 200 200" class="results-ring-svg">
+          <circle cx="100" cy="100" r="88" class="ring-track-big"/>
+          <circle cx="100" cy="100" r="88" class="ring-fill-big" id="ring-fill-big"/>
+        </svg>
+        <div class="results-center">
+          <div class="results-pct" id="results-pct">0%</div>
+          <div class="results-pct-label">GayGPT Score</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict-card" id="verdict-card">
+      <div class="verdict-emoji" id="verdict-emoji">🌈</div>
+      <div class="verdict-text" id="verdict-text">—</div>
+    </div>
+
+    <div class="results-breakdown">
+      <div class="breakdown-item">
+        <div class="breakdown-header">
+          <span class="breakdown-icon">👁️</span>
+          <span class="breakdown-name">Face Energy</span>
+          <span class="breakdown-score" id="res-face-score">—</span>
+        </div>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar bar-pink" id="res-face-bar"></div></div>
+        <div class="insights-list" id="res-face-insights"></div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-header">
+          <span class="breakdown-icon">🎙️</span>
+          <span class="breakdown-name">Voice Energy</span>
+          <span class="breakdown-score" id="res-voice-score">—</span>
+        </div>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar bar-purple" id="res-voice-bar"></div></div>
+        <div class="insights-list" id="res-voice-insights"></div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-header">
+          <span class="breakdown-icon">🎭</span>
+          <span class="breakdown-name">Performance Energy</span>
+          <span class="breakdown-score" id="res-perf-score">—</span>
+        </div>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar bar-blue" id="res-perf-bar"></div></div>
+        <div class="insights-list" id="res-perf-insights"></div>
+      </div>
+    </div>
+
+    <div class="roast-section">
+      <p class="roast-heading">AI Observations:</p>
+      <div class="roast-list" id="roast-list"></div>
+    </div>
+
+    <!-- Hidden share card rendered to canvas -->
+    <canvas id="share-canvas" style="display:none"></canvas>
+
+    <div class="btn-row share-btn-row">
+      <button class="btn btn-share" id="btn-native-share">🔗 Share Score</button>
+      <button class="btn btn-share" id="btn-download-card">💾 Download Card</button>
+    </div>
+    <div class="btn-row share-btn-row">
+      <button class="btn btn-share" id="btn-copy">📋 Copy Results</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="btn-again">🔄 Scan Again</button>
+    </div>
+    <p class="disclaimer">Entertainment only. For laughs and TikToks. Not a real classifier.</p>
+  </section>
+
+  <script src="js/roasts.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/face.js"></script>
+  <script src="js/performance.js"></script>
+  <script src="js/results.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
